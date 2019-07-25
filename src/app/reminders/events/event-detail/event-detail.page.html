@@ -1,0 +1,12 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button text="" defaultHref="/reminders"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Event Detail</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+    <ion-button expand="full" color="primary" [routerLink]="['/reminders', 'tabs', 'events', 'edit', '1']">Edit</ion-button>
+</ion-content>
