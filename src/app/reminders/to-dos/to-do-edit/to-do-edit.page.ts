@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {NavController} from '@ionic/angular';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {ToDo} from '../to-do.model';
 
 @Component({
     selector: 'app-to-do-edit',
@@ -9,6 +10,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 })
 export class ToDoEditPage implements OnInit {
 
+    toDo: ToDo = new ToDo('123', 'Opleti', true);
     form: FormGroup;
 
     constructor(private navCtrl: NavController) {
@@ -16,7 +18,7 @@ export class ToDoEditPage implements OnInit {
 
     ngOnInit() {
         this.form = new FormGroup({
-            title: new FormControl(null, {updateOn: 'change', validators: [Validators.required]})
+            title: new FormControl(this.toDo.title, {updateOn: 'change', validators: [Validators.required]})
         });
     }
 

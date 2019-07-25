@@ -5,6 +5,46 @@
 </ion-header>
 
 <ion-content>
+    <ion-list>
+        <ion-item-divider>
+            <ion-label>To-do</ion-label>
+        </ion-item-divider>
+        <ion-item-sliding #slider *ngFor="let toDo of toDos">
+            <ion-item-options side="start">
+                <ion-item-option (click)="onEditToDo(toDo.id, slider)" color="secondary" expandable>
+                    <ion-icon name="create"></ion-icon>
+                </ion-item-option>
+            </ion-item-options>
+            <ion-item>
+                <ion-label [ngClass]="{done: toDo.done}">{{toDo.title}}</ion-label>
+                <ion-checkbox (ionChange)="onEditToDoDone(toDo)" [(ngModel)]="toDo.done" slot="start"></ion-checkbox>
+            </ion-item>
+            <ion-item-options side="end">
+                <ion-item-option (click)="onDeleteToDo(toDo.id, slider)" color="danger" expandable>
+                    <ion-icon name="trash"></ion-icon>
+                </ion-item-option>
+            </ion-item-options>
+        </ion-item-sliding>
+        <ion-item-divider>
+            <ion-label>Done</ion-label>
+        </ion-item-divider>
+        <ion-item-sliding #slider *ngFor="let toDo of toDosDone">
+            <ion-item-options side="start">
+                <ion-item-option (click)="onEditToDo(toDo.id, slider)" color="secondary" expandable>
+                    <ion-icon name="create"></ion-icon>
+                </ion-item-option>
+            </ion-item-options>
+            <ion-item>
+                <ion-label [ngClass]="{done: toDo.done}">{{toDo.title}}</ion-label>
+                <ion-checkbox (ionChange)="onEditToDoDone(toDo)" [(ngModel)]="toDo.done" slot="start"></ion-checkbox>
+            </ion-item>
+            <ion-item-options side="end">
+                <ion-item-option (click)="onDeleteToDo(toDo.id, slider)" color="danger" expandable>
+                    <ion-icon name="trash"></ion-icon>
+                </ion-item-option>
+            </ion-item-options>
+        </ion-item-sliding>
+    </ion-list>
     <ion-fab vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button routerLink="/reminders/tabs/to-dos/new">
             <ion-icon name="add"></ion-icon>

@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {NavController} from '@ionic/angular';
 import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {Event} from '../event.model';
 
 @Component({
     selector: 'app-event-edit',
@@ -9,6 +10,7 @@ import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/form
 })
 export class EventEditPage implements OnInit {
 
+    event: Event = new Event('123', 'Svadba', 'Kupi pokolon', new Date(), new Date(), new Date(), 'Krezbinac');
     form: FormGroup;
     date = new Date();
 
@@ -17,14 +19,14 @@ export class EventEditPage implements OnInit {
 
     ngOnInit() {
         this.form = new FormGroup({
-            title: new FormControl(null, {updateOn: 'change', validators: [Validators.required]}),
-            date: new FormControl(null, {updateOn: 'change', validators: [Validators.required]}),
+            title: new FormControl(this.event.title, {updateOn: 'change', validators: [Validators.required]}),
+            date: new FormControl(this.event.date.toISOString(), {updateOn: 'change', validators: [Validators.required]}),
             time: new FormGroup({
-                beginTime: new FormControl(null, {updateOn: 'change', validators: [Validators.required]}),
-                endTime: new FormControl(null, {updateOn: 'change', validators: [Validators.required]}),
+                beginTime: new FormControl(this.event.beginTime.toISOString(), {updateOn: 'change', validators: [Validators.required]}),
+                endTime: new FormControl(this.event.endTime.toISOString(), {updateOn: 'change', validators: [Validators.required]}),
             }, {updateOn: 'change', validators: [this.endTimeValidator]}),
-            location: new FormControl(null, {updateOn: 'change'}),
-            notes: new FormControl(null, {updateOn: 'change'}),
+            location: new FormControl(this.event.location, {updateOn: 'change'}),
+            notes: new FormControl(this.event.notes, {updateOn: 'change'}),
         });
     }
 
