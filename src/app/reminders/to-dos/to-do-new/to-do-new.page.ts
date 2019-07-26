@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {NavController} from '@ionic/angular';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {ToDoService} from '../to-do.service';
 
 @Component({
     selector: 'app-to-do-new',
@@ -10,7 +11,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 export class ToDoNewPage implements OnInit {
     form: FormGroup;
 
-    constructor(private navCtrl: NavController) {
+    constructor(private navCtrl: NavController, private toDoService: ToDoService) {
     }
 
     ngOnInit() {
@@ -21,5 +22,6 @@ export class ToDoNewPage implements OnInit {
 
     onCreateToDo() {
         this.navCtrl.pop();
+        this.toDoService.addToDo(this.form.get('title').value).subscribe();
     }
 }

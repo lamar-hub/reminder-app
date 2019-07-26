@@ -1,28 +1,47 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {NavController} from '@ionic/angular';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ToDo} from '../to-do.model';
+import {ToDoService} from '../to-do.service';
+import {ActivatedRoute} from '@angular/router';
+import {Subscription} from 'rxjs';
 
 @Component({
     selector: 'app-to-do-edit',
     templateUrl: './to-do-edit.page.html',
     styleUrls: ['./to-do-edit.page.scss'],
 })
-export class ToDoEditPage implements OnInit {
+export class ToDoEditPage implements OnInit, OnDestroy {
 
-    toDo: ToDo = new ToDo('123', 'Opleti', true);
+    toDo: ToDo;
     form: FormGroup;
+    private sub: Subscription;
 
-    constructor(private navCtrl: NavController) {
+    constructor(private navCtrl: NavController, private toDoService: ToDoService, private route: ActivatedRoute) {
     }
 
     ngOnInit() {
         this.form = new FormGroup({
-            title: new FormControl(this.toDo.title, {updateOn: 'change', validators: [Validators.required]})
+            title: new FormControl(null, {updateOn: 'change', validators: [Validators.required]})
+        });
+        this.route.paramMap.subscribe(paramMap => {
+            this.sub = this.toDoService.getToDo(paramMap.get('toDoId')).subscribe(toDo => {
+                this.toDo = toDo;
+                this.form.setValue({
+                    title: this.toDo.title
+                });
+            });
         });
     }
 
     onEditToDo() {
         this.navCtrl.pop();
+        this.toDoService.updateToDo(this.toDo.id, this.form.get('title').value, this.toDo.done).subscribe();
+    }
+
+    ngOnDestroy(): void {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 }

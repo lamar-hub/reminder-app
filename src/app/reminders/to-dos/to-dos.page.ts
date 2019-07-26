@@ -1,27 +1,33 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ToDo} from './to-do.model';
 import {IonItemSliding} from '@ionic/angular';
 import {Router} from '@angular/router';
+import {ToDoService} from './to-do.service';
+import {Subscription} from 'rxjs';
 
 @Component({
     selector: 'app-to-dos',
     templateUrl: './to-dos.page.html',
     styleUrls: ['./to-dos.page.scss'],
 })
-export class ToDosPage implements OnInit {
+export class ToDosPage implements OnInit, OnDestroy {
 
-    toDos: ToDo[] = [
-        new ToDo('123', 'Uci', false),
-        new ToDo('124', 'Trci', false),
-        new ToDo('125', 'Jedi', false)];
-    toDosDone: ToDo[] = [
-        new ToDo('126', 'Spavaj', true)
-    ];
+    toDos: ToDo[] = [];
+    toDosDone: ToDo[] = [];
+    private sub: Subscription;
 
-    constructor(private router: Router) {
+    constructor(private router: Router, private toDoService: ToDoService) {
     }
 
     ngOnInit() {
+        this.sub = this.toDoService.toDosObservable.subscribe(toDos => {
+            this.toDos = toDos.filter(toDo => !toDo.done);
+            this.toDosDone = toDos.filter(toDo => toDo.done);
+        });
+    }
+
+    ionViewWillEnter() {
+        this.toDoService.fetchAllToDos().subscribe();
     }
 
     onEditToDo(id: string, slider: IonItemSliding) {
@@ -31,9 +37,16 @@ export class ToDosPage implements OnInit {
 
     onDeleteToDo(id: string, slider: IonItemSliding) {
         slider.closeOpened();
+        this.toDoService.deleteToDo(id).subscribe();
     }
 
     onEditToDoDone(toDo: ToDo) {
+        this.toDoService.updateToDo(toDo.id, toDo.title, toDo.done).subscribe();
+    }
 
+    ngOnDestroy(): void {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 }

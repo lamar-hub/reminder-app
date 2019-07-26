@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {NavController} from '@ionic/angular';
 import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {EventService} from '../event.service';
 
 @Component({
     selector: 'app-event-new',
@@ -12,7 +13,7 @@ export class EventNewPage implements OnInit {
     form: FormGroup;
     date = new Date();
 
-    constructor(private navCtrl: NavController) {
+    constructor(private navCtrl: NavController, private eventService: EventService) {
     }
 
     ngOnInit() {
@@ -30,6 +31,13 @@ export class EventNewPage implements OnInit {
 
     onCreateEvent() {
         this.navCtrl.pop();
+        this.eventService.addEvent(
+            this.form.get('title').value,
+            this.form.get('date').value,
+            this.form.get('time.beginTime').value,
+            this.form.get('time.endTime').value,
+            this.form.get('location').value,
+            this.form.get('notes').value).subscribe();
     }
 
     endTimeValidator(control: AbstractControl): { [key: string]: boolean } | null {
