@@ -1,6 +1,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
+import {User} from './user.model';
+import {tap} from 'rxjs/operators';
 
 interface AuthResponseData {
     email: string;
@@ -15,6 +17,12 @@ interface AuthResponseData {
     providedIn: 'root'
 })
 export class AuthService {
+
+    private _user: User;
+
+    get user(): User {
+        return this._user;
+    }
 
     constructor(private httpClient: HttpClient) {
     }
@@ -32,6 +40,14 @@ export class AuthService {
             .post<AuthResponseData>(
                 `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${environment.firebaseApiKey}`,
                 {email, password, returnSecureToken: true}
+            ).pipe(
+                tap(authResponseData => {
+                    this._user = new User(
+                        authResponseData.localId,
+                        authResponseData.email,
+                        authResponseData.idToken,
+                        authResponseData.expiresIn);
+                })
             );
     }
 }
