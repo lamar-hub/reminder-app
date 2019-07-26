@@ -16,7 +16,7 @@
                 <ion-input formControlName="password" type="password"></ion-input>
             </ion-item>
         </ion-list>
-        <ion-button [disabled]="!form.valid" color="primary" expand="full" routerLink="/reminders">Log In
+        <ion-button (click)="onLogIn()" [disabled]="!form.valid" color="primary" expand="full">Log In
         </ion-button>
         <ion-button color="danger" expand="full" routerLink="/sign-up">Sign Up</ion-button>
     </form>

@@ -1,16 +1,20 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {AuthService} from './auth.service';
+import {Subscription} from 'rxjs';
+import {Router} from '@angular/router';
 
 @Component({
     selector: 'app-auth',
     templateUrl: './auth.page.html',
     styleUrls: ['./auth.page.scss'],
 })
-export class AuthPage implements OnInit {
+export class AuthPage implements OnInit, OnDestroy {
 
     form: FormGroup;
+    private sub: Subscription;
 
-    constructor() {
+    constructor(private authService: AuthService, private router: Router) {
     }
 
     ngOnInit() {
@@ -20,4 +24,23 @@ export class AuthPage implements OnInit {
         });
     }
 
+    onLogIn() {
+        this.sub = this.authService
+            .logInUser(this.form.get('email').value, this.form.get('password').value)
+            .subscribe(
+                authResponseData => {
+                    console.log(authResponseData);
+                    this.router.navigateByUrl('/reminders');
+                },
+                error => {
+                    console.log(error.error.error.message);
+                }
+            );
+    }
+
+    ngOnDestroy(): void {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+    }
 }
