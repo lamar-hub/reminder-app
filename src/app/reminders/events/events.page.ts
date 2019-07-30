@@ -1,9 +1,10 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Event} from './event.model';
-import {IonItemSliding} from '@ionic/angular';
+import {IonItemSliding, ModalController} from '@ionic/angular';
 import {Router} from '@angular/router';
 import {EventService} from './event.service';
 import {Subscription} from 'rxjs';
+import {AccountComponent} from '../account/account.component';
 
 @Component({
     selector: 'app-events',
@@ -15,7 +16,7 @@ export class EventsPage implements OnInit, OnDestroy {
     events: Event[] = [];
     private sub: Subscription;
 
-    constructor(private router: Router, private eventService: EventService) {
+    constructor(private router: Router, private eventService: EventService, private modalCtrl: ModalController) {
     }
 
     ngOnInit() {
@@ -38,9 +39,22 @@ export class EventsPage implements OnInit, OnDestroy {
         this.eventService.deleteEvent(id).subscribe();
     }
 
+    openAccount() {
+        this.modalCtrl
+            .create(
+                {
+                    component: AccountComponent,
+                }
+            )
+            .then(modalEl => {
+                modalEl.present();
+            });
+    }
+
     ngOnDestroy(): void {
         if (this.sub) {
             this.sub.unsubscribe();
         }
     }
+
 }

@@ -3,6 +3,8 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
 import {User} from './user.model';
 import {tap} from 'rxjs/operators';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {Router} from '@angular/router';
 
 interface AuthResponseData {
     email: string;
@@ -18,13 +20,13 @@ interface AuthResponseData {
 })
 export class AuthService {
 
-    private _user: User;
+    private _userSubject = new BehaviorSubject<User>(null);
 
-    get user(): User {
-        return this._user;
+    constructor(private httpClient: HttpClient, private router: Router) {
     }
 
-    constructor(private httpClient: HttpClient) {
+    get userObservable(): Observable<User> {
+        return this._userSubject.asObservable();
     }
 
     signUpUser(email: string, password: string) {
@@ -42,12 +44,19 @@ export class AuthService {
                 {email, password, returnSecureToken: true}
             ).pipe(
                 tap(authResponseData => {
-                    this._user = new User(
+                    const user = new User(
                         authResponseData.localId,
                         authResponseData.email,
                         authResponseData.idToken,
                         authResponseData.expiresIn);
+                    console.log(user);
+                    this._userSubject.next(user);
                 })
             );
+    }
+
+    logOutUser() {
+        this.router.navigateByUrl('/auth');
+        this._userSubject.next(null);
     }
 }

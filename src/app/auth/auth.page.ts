@@ -28,8 +28,7 @@ export class AuthPage implements OnInit, OnDestroy {
         this.sub = this.authService
             .logInUser(this.form.get('email').value, this.form.get('password').value)
             .subscribe(
-                authResponseData => {
-                    console.log(authResponseData);
+                () => {
                     this.router.navigateByUrl('/reminders');
                 },
                 error => {

@@ -6,6 +6,7 @@ import {IonicModule} from '@ionic/angular';
 
 import {RemindersPage} from './reminders.page';
 import {RemindersRoutingModule} from './reminders-routing.module';
+import {AccountComponent} from './account/account.component';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import {RemindersRoutingModule} from './reminders-routing.module';
         IonicModule,
         RemindersRoutingModule
     ],
-    declarations: [RemindersPage]
+    declarations: [RemindersPage, AccountComponent],
+    entryComponents: [AccountComponent]
 })
 export class RemindersPageModule {
 }

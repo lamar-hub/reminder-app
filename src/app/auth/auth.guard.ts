@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {CanLoad, Route, Router, UrlSegment} from '@angular/router';
 import {Observable} from 'rxjs';
 import {AuthService} from './auth.service';
+import {map, take, tap} from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root'
@@ -12,11 +13,16 @@ export class AuthGuard implements CanLoad {
     }
 
     canLoad(route: Route, segments: UrlSegment[]): Observable<boolean> | Promise<boolean> | boolean {
-        if (!this.authService.user) {
-            this.router.navigateByUrl('/auth');
-            return false;
-        }
-        return true;
+        return this.authService.userObservable
+            .pipe(
+                take(1),
+                map(user => !!user),
+                tap(loadable => {
+                    if (!loadable) {
+                        this.router.navigateByUrl('/auth');
+                    }
+                })
+            );
     }
 
 }
