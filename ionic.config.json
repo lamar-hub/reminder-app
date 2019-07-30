@@ -1,5 +1,7 @@
 {
   "name": "reminder-app",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }

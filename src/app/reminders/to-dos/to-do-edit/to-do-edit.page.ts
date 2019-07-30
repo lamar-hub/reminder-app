@@ -16,6 +16,7 @@ export class ToDoEditPage implements OnInit, OnDestroy {
     toDo: ToDo;
     form: FormGroup;
     private sub: Subscription;
+    private sub2: Subscription;
 
     constructor(private navCtrl: NavController, private toDoService: ToDoService, private route: ActivatedRoute) {
     }
@@ -35,13 +36,17 @@ export class ToDoEditPage implements OnInit, OnDestroy {
     }
 
     onEditToDo() {
-        this.navCtrl.pop();
-        this.toDoService.updateToDo(this.toDo.id, this.form.get('title').value, this.toDo.done).subscribe();
+        this.sub2 = this.toDoService.updateToDo(this.toDo.id, this.form.get('title').value, this.toDo.done).subscribe(() => {
+            this.navCtrl.pop();
+        });
     }
 
     ngOnDestroy(): void {
         if (this.sub) {
             this.sub.unsubscribe();
+        }
+        if (this.sub2) {
+            this.sub2.unsubscribe();
         }
     }
 }

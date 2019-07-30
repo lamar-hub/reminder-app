@@ -17,6 +17,7 @@ export class EventEditPage implements OnInit, OnDestroy {
     form: FormGroup;
     date = new Date();
     private sub: Subscription;
+    private sub2: Subscription;
 
     constructor(private navCtrl: NavController, private eventService: EventService, private route: ActivatedRoute) {
     }
@@ -51,15 +52,16 @@ export class EventEditPage implements OnInit, OnDestroy {
     }
 
     onEditEvent() {
-        this.navCtrl.pop();
-        this.eventService.updateEvent(
+        this.sub2 = this.eventService.updateEvent(
             this.event.id,
             this.form.get('title').value,
             new Date(this.form.get('date').value),
             new Date(this.form.get('time.beginTime').value),
             new Date(this.form.get('time.endTime').value),
             this.form.get('location').value,
-            this.form.get('notes').value).subscribe();
+            this.form.get('notes').value).subscribe(() => {
+            this.navCtrl.pop();
+        });
     }
 
     endTimeValidator(control: AbstractControl): { [key: string]: boolean } | null {
@@ -72,6 +74,9 @@ export class EventEditPage implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.sub) {
             this.sub.unsubscribe();
+        }
+        if (this.sub2) {
+            this.sub2.unsubscribe();
         }
     }
 }

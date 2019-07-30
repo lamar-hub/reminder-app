@@ -32,13 +32,11 @@ export class ToDosPage implements OnInit, OnDestroy {
     }
 
     onEditToDo(id: string, slider: IonItemSliding) {
-        slider.closeOpened();
-        this.router.navigate(['/', 'reminders', 'tabs', 'to-dos', 'edit', id]);
+        slider.closeOpened().then(() => this.router.navigate(['/', 'reminders', 'tabs', 'to-dos', 'edit', id]));
     }
 
     onDeleteToDo(id: string, slider: IonItemSliding) {
-        slider.closeOpened();
-        this.toDoService.deleteToDo(id).subscribe();
+        slider.closeOpened().then(() => this.toDoService.deleteToDo(id).subscribe());
     }
 
     onEditToDoDone(toDo: ToDo) {
