@@ -6,21 +6,24 @@ import {RouterModule, Routes} from '@angular/router';
 import {IonicModule} from '@ionic/angular';
 
 import {EventNewPage} from './event-new.page';
+import {SharedModule} from '../../../shared/shared.module';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: EventNewPage
-  }
+    {
+        path: '',
+        component: EventNewPage
+    }
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    IonicModule,
-    RouterModule.forChild(routes)
-  ],
-  declarations: [EventNewPage]
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        SharedModule,
+        IonicModule,
+        RouterModule.forChild(routes)
+    ],
+    declarations: [EventNewPage]
 })
-export class EventNewPageModule {}
+export class EventNewPageModule {
+}
