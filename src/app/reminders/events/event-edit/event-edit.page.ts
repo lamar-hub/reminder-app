@@ -44,8 +44,8 @@ export class EventEditPage implements OnInit, OnDestroy {
                         beginTime: this.event.beginTime,
                         endTime: this.event.endTime,
                     },
-                    location: this.event.location,
-                    notes: this.event.notes
+                    location: !!this.event.location ? this.event.location : null,
+                    notes: !!this.event.notes ? this.event.notes : null
                 });
             });
         });

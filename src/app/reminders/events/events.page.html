@@ -11,24 +11,32 @@
 </ion-header>
 
 <ion-content>
-    <ion-list>
-        <ion-item-sliding #slider *ngFor="let event of events">
-            <ion-item-options side="start">
-                <ion-item-option (click)="onEditEvent(event.id, slider)" color="secondary" expandable>
-                    <ion-icon name="create"></ion-icon>
-                </ion-item-option>
-            </ion-item-options>
-            <ion-item [routerLink]="['/','reminders','tabs','events', event.id]">
-                <ion-label>{{event.title}}</ion-label>
-                <ion-note color="tertiary" slot="end">{{event.date | date}}</ion-note>
+    <div *ngIf="loading" text-center>
+        <ion-spinner name="bubbles"></ion-spinner>
+    </div>
+    <div *ngIf="!loading">
+        <ion-list>
+            <ion-item *ngIf="events.length === 0" text-center>
+                <ion-label>Please enter event!</ion-label>
             </ion-item>
-            <ion-item-options side="end">
-                <ion-item-option (click)="onDeleteEvent(event.id, slider)" color="danger" expandable>
-                    <ion-icon name="trash"></ion-icon>
-                </ion-item-option>
-            </ion-item-options>
-        </ion-item-sliding>
-    </ion-list>
+            <ion-item-sliding #slider *ngFor="let event of events">
+                <ion-item-options side="start">
+                    <ion-item-option (click)="onEditEvent(event.id, slider)" color="secondary" expandable>
+                        <ion-icon name="create"></ion-icon>
+                    </ion-item-option>
+                </ion-item-options>
+                <ion-item [routerLink]="['/','reminders','tabs','events', event.id]">
+                    <ion-label>{{event.title}}</ion-label>
+                    <ion-note color="tertiary" slot="end">{{event.date | date}}</ion-note>
+                </ion-item>
+                <ion-item-options side="end">
+                    <ion-item-option (click)="onDeleteEvent(event.id, slider)" color="danger" expandable>
+                        <ion-icon name="trash"></ion-icon>
+                    </ion-item-option>
+                </ion-item-options>
+            </ion-item-sliding>
+        </ion-list>
+    </div>
     <ion-fab vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button routerLink="/reminders/tabs/events/new">
             <ion-icon name="add"></ion-icon>

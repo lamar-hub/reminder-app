@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, forkJoin} from 'rxjs';
 import {ToDo} from './to-do.model';
 import {HttpClient} from '@angular/common/http';
 import {map, switchMap, take, tap} from 'rxjs/operators';
@@ -110,5 +110,12 @@ export class ToDoService {
                     this._toDosSubject.next(updatedToDo);
                 }),
             );
+    }
+
+    deleteAllDoneToDos(idArray: string[]) {
+        const observables = [];
+        idArray.forEach(id => observables.push(this.deleteToDo(id)));
+
+        return forkJoin(observables);
     }
 }

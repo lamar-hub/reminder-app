@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ToDo} from './to-do.model';
-import {IonItemSliding, ModalController} from '@ionic/angular';
+import {ActionSheetController, IonItemSliding, ModalController} from '@ionic/angular';
 import {Router} from '@angular/router';
 import {ToDoService} from './to-do.service';
 import {Subscription} from 'rxjs';
@@ -13,11 +13,17 @@ import {AccountComponent} from '../account/account.component';
 })
 export class ToDosPage implements OnInit, OnDestroy {
 
+    loading = true;
     toDos: ToDo[] = [];
     toDosDone: ToDo[] = [];
     private sub: Subscription;
+    private sub2: Subscription;
+    private sub3: Subscription;
 
-    constructor(private router: Router, private toDoService: ToDoService, private modalCtrl: ModalController) {
+    constructor(private router: Router,
+                private toDoService: ToDoService,
+                private modalCtrl: ModalController,
+                private actionSheetCtrl: ActionSheetController) {
     }
 
     ngOnInit() {
@@ -28,7 +34,8 @@ export class ToDosPage implements OnInit, OnDestroy {
     }
 
     ionViewWillEnter() {
-        this.toDoService.fetchAllToDos().subscribe();
+        this.loading = true;
+        this.sub2 = this.toDoService.fetchAllToDos().subscribe(() => this.loading = false);
     }
 
     onEditToDo(id: string, slider: IonItemSliding) {
@@ -36,7 +43,24 @@ export class ToDosPage implements OnInit, OnDestroy {
     }
 
     onDeleteToDo(id: string, slider: IonItemSliding) {
-        slider.closeOpened().then(() => this.toDoService.deleteToDo(id).subscribe());
+        this.actionSheetCtrl.create({
+            header: 'To-do',
+            buttons: [
+                {
+                    text: 'Delete',
+                    handler: () => {
+                        this.loading = true;
+                        slider.closeOpened().then(() => this.sub3 = this.toDoService.deleteToDo(id).subscribe(() => this.loading = false));
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'destructive'
+                }
+            ]
+        }).then(asel => {
+            asel.present();
+        });
     }
 
     onEditToDoDone(toDo: ToDo) {
@@ -55,10 +79,36 @@ export class ToDosPage implements OnInit, OnDestroy {
             });
     }
 
+    onDeleteAllDoneToDos() {
+        this.actionSheetCtrl.create({
+            header: 'To-dos',
+            buttons: [
+                {
+                    text: 'Delete ALL',
+                    handler: () => {
+                        this.loading = true;
+                        this.toDoService.deleteAllDoneToDos(this.toDosDone.map(toDo => toDo.id)).subscribe(() => this.loading = false);
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'destructive'
+                }
+            ]
+        }).then(asel => {
+            asel.present();
+        });
+    }
+
     ngOnDestroy(): void {
         if (this.sub) {
             this.sub.unsubscribe();
         }
+        if (this.sub2) {
+            this.sub2.unsubscribe();
+        }
+        if (this.sub3) {
+            this.sub3.unsubscribe();
+        }
     }
-
 }

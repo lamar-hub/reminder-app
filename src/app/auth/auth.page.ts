@@ -3,6 +3,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {AuthService} from './auth.service';
 import {Subscription} from 'rxjs';
 import {Router} from '@angular/router';
+import {LoadingController} from '@ionic/angular';
 
 @Component({
     selector: 'app-auth',
@@ -14,7 +15,7 @@ export class AuthPage implements OnInit, OnDestroy {
     form: FormGroup;
     private sub: Subscription;
 
-    constructor(private authService: AuthService, private router: Router) {
+    constructor(private authService: AuthService, private router: Router, private loadingCtrl: LoadingController) {
     }
 
     ngOnInit() {
@@ -25,6 +26,24 @@ export class AuthPage implements OnInit, OnDestroy {
     }
 
     onLogIn() {
+        this.loadingCtrl.create({
+            keyboardClose: true,
+            spinner: 'bubbles'
+        }).then(lcel => {
+            lcel.present().then(() => {
+                this.sub = this.authService
+                    .logInUser(this.form.get('email').value, this.form.get('password').value)
+                    .subscribe(
+                        () => {
+                            lcel.dismiss().then(() => this.router.navigateByUrl('/reminders'));
+                        },
+                        error => {
+                            console.log(error.error.error.message);
+                        }
+                    );
+            });
+        });
+
         this.sub = this.authService
             .logInUser(this.form.get('email').value, this.form.get('password').value)
             .subscribe(

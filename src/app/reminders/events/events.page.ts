@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Event} from './event.model';
-import {IonItemSliding, ModalController} from '@ionic/angular';
+import {ActionSheetController, IonItemSliding, ModalController} from '@ionic/angular';
 import {Router} from '@angular/router';
 import {EventService} from './event.service';
 import {Subscription} from 'rxjs';
@@ -13,10 +13,15 @@ import {AccountComponent} from '../account/account.component';
 })
 export class EventsPage implements OnInit, OnDestroy {
 
+    loading = true;
     events: Event[] = [];
     private sub: Subscription;
+    private sub2: Subscription;
 
-    constructor(private router: Router, private eventService: EventService, private modalCtrl: ModalController) {
+    constructor(private router: Router,
+                private eventService: EventService,
+                private modalCtrl: ModalController,
+                private actionSheetCtrl: ActionSheetController) {
     }
 
     ngOnInit() {
@@ -26,17 +31,36 @@ export class EventsPage implements OnInit, OnDestroy {
     }
 
     ionViewWillEnter() {
-        this.eventService.fetchAllEvents().subscribe();
+        this.loading = true;
+        this.eventService.fetchAllEvents().subscribe(() => {
+            this.loading = false;
+        });
     }
 
     onEditEvent(id: string, slider: IonItemSliding) {
-        slider.closeOpened();
-        this.router.navigate(['/', 'reminders', 'tabs', 'events', 'edit', id]);
+        slider.closeOpened().then(() => this.router.navigate(['/', 'reminders', 'tabs', 'events', 'edit', id]));
     }
 
     onDeleteEvent(id: string, slider: IonItemSliding) {
-        slider.closeOpened();
-        this.eventService.deleteEvent(id).subscribe();
+        this.actionSheetCtrl.create({
+            header: 'Event',
+            buttons: [
+                {
+                    text: 'Delete',
+                    handler: () => {
+                        this.loading = true;
+                        slider.closeOpened().then(() => this.sub2 =
+                            this.eventService.deleteEvent(id).subscribe(() => this.loading = false));
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'destructive'
+                }
+            ]
+        }).then(asel => {
+            asel.present();
+        });
     }
 
     openAccount() {
@@ -54,6 +78,9 @@ export class EventsPage implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.sub) {
             this.sub.unsubscribe();
+        }
+        if (this.sub2) {
+            this.sub2.unsubscribe();
         }
     }
 
