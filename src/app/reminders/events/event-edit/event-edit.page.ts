@@ -1,10 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {NavController} from '@ionic/angular';
+import {ModalController, NavController} from '@ionic/angular';
 import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Event} from '../event.model';
-import {Subscription} from 'rxjs';
+import {of, Subscription} from 'rxjs';
 import {EventService} from '../event.service';
 import {ActivatedRoute} from '@angular/router';
+import {PlaceLocation} from '../location.model';
+import {MapModalComponent} from '../../../shared/map-modal/map-modal.component';
+import {switchMap, tap} from 'rxjs/operators';
 
 @Component({
     selector: 'app-event-edit',
@@ -18,8 +21,12 @@ export class EventEditPage implements OnInit, OnDestroy {
     date = new Date();
     private sub: Subscription;
     private sub2: Subscription;
+    selectedLocationImage: string;
 
-    constructor(private navCtrl: NavController, private eventService: EventService, private route: ActivatedRoute) {
+    constructor(private navCtrl: NavController,
+                private eventService: EventService,
+                private route: ActivatedRoute,
+                private modalCtrl: ModalController) {
     }
 
     ngOnInit() {
@@ -37,6 +44,7 @@ export class EventEditPage implements OnInit, OnDestroy {
             console.log(paramMap.get('eventId'));
             this.sub = this.eventService.getEvent(paramMap.get('eventId')).subscribe(event => {
                 this.event = event;
+                this.selectedLocationImage = this.event.location.staticMapImageUrl;
                 this.form.setValue({
                     title: this.event.title,
                     date: this.event.date,
@@ -44,7 +52,7 @@ export class EventEditPage implements OnInit, OnDestroy {
                         beginTime: this.event.beginTime,
                         endTime: this.event.endTime,
                     },
-                    location: !!this.event.location ? this.event.location : null,
+                    location: this.event.location,
                     notes: !!this.event.notes ? this.event.notes : null
                 });
             });
@@ -69,6 +77,40 @@ export class EventEditPage implements OnInit, OnDestroy {
             return {dateMin: false};
         }
         return null;
+    }
+
+    onPickLocation() {
+        this.modalCtrl.create({
+            component: MapModalComponent
+        }).then(modalEl => {
+            modalEl.onDidDismiss().then(modalData => {
+                if (!modalData.data) {
+                    return;
+                }
+                const pickedLocation: PlaceLocation = {
+                    lat: modalData.data.lat,
+                    lng: modalData.data.lng,
+                    address: null,
+                    staticMapImageUrl: null
+                };
+                this.eventService.getAddress(modalData.data.lat, modalData.data.lng)
+                    .pipe(
+                        switchMap(address => {
+                            pickedLocation.address = address;
+                            return of(this.eventService.getAppImage(pickedLocation.lat, pickedLocation.lng, 14));
+                        }),
+                        tap(staticMapUrl => {
+                            pickedLocation.staticMapImageUrl = staticMapUrl;
+                            this.selectedLocationImage = staticMapUrl;
+                            this.form.patchValue({
+                                location: pickedLocation
+                            });
+                        })
+                    )
+                    .subscribe();
+            });
+            modalEl.present();
+        });
     }
 
     ngOnDestroy(): void {

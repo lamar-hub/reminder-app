@@ -3,6 +3,8 @@ import {BehaviorSubject} from 'rxjs';
 import {Event} from './event.model';
 import {HttpClient} from '@angular/common/http';
 import {map, switchMap, take, tap} from 'rxjs/operators';
+import {PlaceLocation} from './location.model';
+import {environment} from '../../../environments/environment';
 
 interface EventData {
     title: string;
@@ -10,7 +12,7 @@ interface EventData {
     date: Date;
     beginTime: Date;
     endTime: Date;
-    location: string;
+    location: PlaceLocation;
 }
 
 @Injectable({
@@ -65,7 +67,7 @@ export class EventService {
             );
     }
 
-    addEvent(title: string, date: string, beginTime: string, endTime: string, location: string, notes: string) {
+    addEvent(title: string, date: string, beginTime: string, endTime: string, location: PlaceLocation, notes: string) {
         const newEvent = new Event('1', title, notes, new Date(date), new Date(beginTime), new Date(endTime), location);
         let generatedId: string;
 
@@ -85,7 +87,7 @@ export class EventService {
             );
     }
 
-    updateEvent(id: string, title: string, date: Date, beginTime: Date, endTime: Date, location: string, notes: string) {
+    updateEvent(id: string, title: string, date: Date, beginTime: Date, endTime: Date, location: PlaceLocation, notes: string) {
         let updatedEvents: Event[];
         return this.eventsObservable
             .pipe(take(1),
@@ -123,5 +125,23 @@ export class EventService {
                     this._eventsSubject.next(events);
                 }),
             );
+    }
+
+    getAddress(lat: number, lng: number) {
+        return this.httpClient
+            .get<any>(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${environment.googleMapsApiKey}`)
+            .pipe(
+                map(geoData => {
+                    if (!geoData || !geoData.results || geoData.results.length === 0) {
+                        return null;
+                    }
+                    return geoData.results[0].formatted_address;
+                })
+            );
+    }
+
+    getAppImage(lat: number, lng: number, zoom: number) {
+        return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=5000x300&maptype=roadmap
+                        &markers=color:red%7Clabel:Place%7C${lat},${lng}&key=${environment.googleMapsApiKey}`;
     }
 }

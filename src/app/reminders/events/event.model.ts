@@ -1,3 +1,5 @@
+import {PlaceLocation} from './location.model';
+
 export class Event {
     constructor(
         public id: string,
@@ -6,6 +8,6 @@ export class Event {
         public date: Date,
         public beginTime: Date,
         public endTime: Date,
-        public location: string) {
+        public location: PlaceLocation) {
     }
 }
