@@ -51,10 +51,14 @@
                         formControlName="notes"
                 ></ion-textarea>
             </ion-item>
-            <ion-item *ngIf="!selectedLocationImage" lines="none">
+            <ion-item lines="none">
                 <ion-button (click)="onPickLocation()" expand="full">
                     Pick Location
-                    <ion-icon name="pin" slot="end"></ion-icon>
+                    <ion-icon name="pin" slot="start"></ion-icon>
+                </ion-button>
+                <ion-button (click)="onAutoLocate()" expand="full">
+                    Auto Locate
+                    <ion-icon name="locate" slot="end"></ion-icon>
                 </ion-button>
             </ion-item>
             <ion-item *ngIf="selectedLocationImage" lines="none" text-center>

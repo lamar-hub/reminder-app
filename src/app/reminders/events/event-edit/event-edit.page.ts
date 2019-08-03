@@ -8,6 +8,7 @@ import {ActivatedRoute} from '@angular/router';
 import {PlaceLocation} from '../location.model';
 import {MapModalComponent} from '../../../shared/map-modal/map-modal.component';
 import {switchMap, tap} from 'rxjs/operators';
+import {Plugins} from '@capacitor/core';
 
 @Component({
     selector: 'app-event-edit',
@@ -111,6 +112,38 @@ export class EventEditPage implements OnInit, OnDestroy {
             });
             modalEl.present();
         });
+    }
+
+    onAutoLocate() {
+        Plugins.Geolocation
+            .getCurrentPosition()
+            .then((position: Position) => {
+                const pickedLocation: PlaceLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    address: null,
+                    staticMapImageUrl: null
+                };
+                this.eventService
+                    .getAddress(position.coords.latitude, position.coords.longitude)
+                    .pipe(
+                        switchMap(address => {
+                            pickedLocation.address = address;
+                            return of(this.eventService.getAppImage(pickedLocation.lat, pickedLocation.lng, 14));
+                        }),
+                        tap(staticMapUrl => {
+                            pickedLocation.staticMapImageUrl = staticMapUrl;
+                            this.selectedLocationImage = staticMapUrl;
+                            this.form.patchValue({
+                                location: pickedLocation
+                            });
+                        })
+                    )
+                    .subscribe();
+            })
+            .catch(reason => {
+                console.log(reason);
+            });
     }
 
     ngOnDestroy(): void {
