@@ -5,6 +5,8 @@ import {Router} from '@angular/router';
 import {EventService} from './event.service';
 import {Subscription} from 'rxjs';
 import {AccountComponent} from '../account/account.component';
+import {ImageService} from '../account/image.service';
+import {SafeResourceUrl} from '@angular/platform-browser';
 
 @Component({
     selector: 'app-events',
@@ -15,18 +17,24 @@ export class EventsPage implements OnInit, OnDestroy {
 
     loading = true;
     events: Event[] = [];
+    imageUrl: SafeResourceUrl;
     private sub: Subscription;
     private sub2: Subscription;
+    private sub3: Subscription;
 
     constructor(private router: Router,
                 private eventService: EventService,
                 private modalCtrl: ModalController,
-                private actionSheetCtrl: ActionSheetController) {
+                private actionSheetCtrl: ActionSheetController,
+                private imageService: ImageService) {
     }
 
     ngOnInit() {
         this.sub = this.eventService.eventsObservable.subscribe(events => {
             this.events = events;
+        });
+        this.sub3 = this.imageService.imageUrlObservable.subscribe(url => {
+            this.imageUrl = url;
         });
     }
 
@@ -81,6 +89,9 @@ export class EventsPage implements OnInit, OnDestroy {
         }
         if (this.sub2) {
             this.sub2.unsubscribe();
+        }
+        if (this.sub3) {
+            this.sub3.unsubscribe();
         }
     }
 

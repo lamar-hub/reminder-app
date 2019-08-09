@@ -5,6 +5,8 @@ import {Router} from '@angular/router';
 import {ToDoService} from './to-do.service';
 import {Subscription} from 'rxjs';
 import {AccountComponent} from '../account/account.component';
+import {ImageService} from '../account/image.service';
+import {SafeResourceUrl} from '@angular/platform-browser';
 
 @Component({
     selector: 'app-to-dos',
@@ -16,20 +18,26 @@ export class ToDosPage implements OnInit, OnDestroy {
     loading = true;
     toDos: ToDo[] = [];
     toDosDone: ToDo[] = [];
+    imageUrl: SafeResourceUrl;
     private sub: Subscription;
     private sub2: Subscription;
     private sub3: Subscription;
+    private sub4: Subscription;
 
     constructor(private router: Router,
                 private toDoService: ToDoService,
                 private modalCtrl: ModalController,
-                private actionSheetCtrl: ActionSheetController) {
+                private actionSheetCtrl: ActionSheetController,
+                private imageService: ImageService) {
     }
 
     ngOnInit() {
         this.sub = this.toDoService.toDosObservable.subscribe(toDos => {
             this.toDos = toDos.filter(toDo => !toDo.done);
             this.toDosDone = toDos.filter(toDo => toDo.done);
+        });
+        this.sub4 = this.imageService.imageUrlObservable.subscribe(url => {
+            this.imageUrl = url;
         });
     }
 
@@ -109,6 +117,9 @@ export class ToDosPage implements OnInit, OnDestroy {
         }
         if (this.sub3) {
             this.sub3.unsubscribe();
+        }
+        if (this.sub4) {
+            this.sub4.unsubscribe();
         }
     }
 }

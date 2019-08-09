@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {ImageService} from './account/image.service';
 
 @Component({
   selector: 'app-reminders',
@@ -7,9 +8,11 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RemindersPage implements OnInit {
 
-  constructor() { }
+  constructor(private imageService: ImageService) {
+  }
 
   ngOnInit() {
+    this.imageService.fetchImage().subscribe();
   }
 
 }
