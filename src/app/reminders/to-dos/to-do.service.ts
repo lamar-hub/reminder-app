@@ -1,8 +1,9 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, forkJoin} from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {BehaviorSubject, forkJoin, Subscription} from 'rxjs';
 import {ToDo} from './to-do.model';
 import {HttpClient} from '@angular/common/http';
 import {map, switchMap, take, tap} from 'rxjs/operators';
+import {AuthService} from '../../auth/auth.service';
 
 interface ToDoData {
     title: string;
@@ -12,11 +13,21 @@ interface ToDoData {
 @Injectable({
     providedIn: 'root'
 })
-export class ToDoService {
+export class ToDoService implements OnDestroy {
 
     private _toDosSubject = new BehaviorSubject<ToDo[]>([]);
+    private userId: string;
+    private token: string;
+    private readonly sub: Subscription;
+    private readonly sub2: Subscription;
 
-    constructor(private httpClient: HttpClient) {
+    constructor(private httpClient: HttpClient, private authService: AuthService) {
+        this.sub = this.authService.userId.subscribe(id => {
+            this.userId = id;
+        });
+        this.sub2 = this.authService.getToken.subscribe(token => {
+            this.token = token;
+        });
     }
 
     get toDosObservable() {
@@ -25,7 +36,7 @@ export class ToDoService {
 
     fetchAllToDos() {
         return this.httpClient
-            .get<{ [key: string]: ToDoData }>('https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/to-dos.json')
+            .get<{ [key: string]: ToDoData }>(`https://ionic-to-do-project.firebaseio.com/${this.userId}/to-dos.json?auth=${this.token}`)
             .pipe(
                 map(responseData => {
                     const toDos = [];
@@ -44,7 +55,7 @@ export class ToDoService {
 
     getToDo(id: string) {
         return this.httpClient
-            .get<ToDoData>(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/to-dos/${id}.json`)
+            .get<ToDoData>(`https://ionic-to-do-project.firebaseio.com/${this.userId}/to-dos/${id}.json?auth=${this.token}`)
             .pipe(
                 map(responseData => {
                     return new ToDo(id, responseData.title, responseData.done);
@@ -58,7 +69,7 @@ export class ToDoService {
         let generatedId: string;
 
         return this.httpClient
-            .post<{ name: string }>(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/to-dos.json`,
+            .post<{ name: string }>(`https://ionic-to-do-project.firebaseio.com/${this.userId}/to-dos.json?auth=${this.token}`,
                 {...newToDo, id: null})
             .pipe(
                 switchMap(responseData => {
@@ -85,7 +96,7 @@ export class ToDoService {
                     updatedToDos[index].done = done;
 
                     return this.httpClient
-                        .put(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/to-dos/${id}.json`,
+                        .put(`https://ionic-to-do-project.firebaseio.com/${this.userId}/to-dos/${id}.json?auth=${this.token}`,
                             {...updatedToDos[index], id: null});
                 }),
                 tap(() => {
@@ -96,7 +107,7 @@ export class ToDoService {
 
     deleteToDo(id: string) {
         return this.httpClient
-            .delete(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/to-dos/${id}.json`)
+            .delete(`https://ionic-to-do-project.firebaseio.com/${this.userId}/to-dos/${id}.json?auth=${this.token}`)
             .pipe(
                 switchMap(() => {
                     return this.toDosObservable;
@@ -117,5 +128,14 @@ export class ToDoService {
         idArray.forEach(id => observables.push(this.deleteToDo(id)));
 
         return forkJoin(observables);
+    }
+
+    ngOnDestroy(): void {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+        if (this.sub2) {
+            this.sub2.unsubscribe();
+        }
     }
 }

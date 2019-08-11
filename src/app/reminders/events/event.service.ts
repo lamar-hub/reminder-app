@@ -1,10 +1,11 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject} from 'rxjs';
+import {Injectable, OnDestroy} from '@angular/core';
+import {BehaviorSubject, Subscription} from 'rxjs';
 import {Event} from './event.model';
 import {HttpClient} from '@angular/common/http';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {PlaceLocation} from './location.model';
 import {environment} from '../../../environments/environment';
+import {AuthService} from '../../auth/auth.service';
 
 interface EventData {
     title: string;
@@ -18,11 +19,21 @@ interface EventData {
 @Injectable({
     providedIn: 'root'
 })
-export class EventService {
+export class EventService implements OnDestroy {
 
     private _eventsSubject = new BehaviorSubject<Event[]>([]);
+    private userId: string;
+    private token: string;
+    private readonly sub: Subscription;
+    private readonly sub2: Subscription;
 
-    constructor(private httpClient: HttpClient) {
+    constructor(private httpClient: HttpClient, private authService: AuthService) {
+        this.sub = this.authService.userId.subscribe(id => {
+            this.userId = id;
+        });
+        this.sub2 = this.authService.getToken.subscribe(token => {
+            this.token = token;
+        });
     }
 
     get eventsObservable() {
@@ -31,7 +42,7 @@ export class EventService {
 
     fetchAllEvents() {
         return this.httpClient
-            .get<{ [key: string]: EventData }>(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/events.json`)
+            .get<{ [key: string]: EventData }>(`https://ionic-to-do-project.firebaseio.com/${this.userId}/events.json?auth=${this.token}`)
             .pipe(
                 map(responseData => {
                     const events = [];
@@ -58,7 +69,7 @@ export class EventService {
 
     getEvent(id: string) {
         return this.httpClient
-            .get<EventData>(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/events/${id}.json`)
+            .get<EventData>(`https://ionic-to-do-project.firebaseio.com/${this.userId}/events/${id}.json?auth=${this.token}`)
             .pipe(
                 map(responseData => {
                     return new Event(id, responseData.title, responseData.notes,
@@ -72,7 +83,7 @@ export class EventService {
         let generatedId: string;
 
         return this.httpClient
-            .post<{ name: string }>(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/events.json`,
+            .post<{ name: string }>(`https://ionic-to-do-project.firebaseio.com/${this.userId}/events.json?auth=${this.token}`,
                 {...newEvent, id: null})
             .pipe(
                 switchMap(responseData => {
@@ -101,8 +112,9 @@ export class EventService {
                     updatedEvents[index].date = date;
                     updatedEvents[index].location = location;
 
-                    return this.httpClient.put(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/events/${id}.json`,
-                        {...updatedEvents[index], id: null});
+                    return this.httpClient
+                        .put(`https://ionic-to-do-project.firebaseio.com/${this.userId}/events/${id}.json?auth=${this.token}`,
+                            {...updatedEvents[index], id: null});
                 }),
                 tap(() => {
                     this._eventsSubject.next(updatedEvents);
@@ -112,7 +124,7 @@ export class EventService {
 
     deleteEvent(id: string) {
         return this.httpClient
-            .delete(`https://ionic-to-do-project.firebaseio.com/d51o4LPOdXZWlxnu15c7spVD2QB2/events/${id}.json`)
+            .delete(`https://ionic-to-do-project.firebaseio.com/${this.userId}/events/${id}.json?auth=${this.token}`)
             .pipe(
                 switchMap(() => {
                     return this.eventsObservable;
@@ -143,5 +155,14 @@ export class EventService {
     getAppImage(lat: number, lng: number, zoom: number) {
         return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=5000x300&maptype=roadmap
                         &markers=color:red%7Clabel:Place%7C${lat},${lng}&key=${environment.googleMapsApiKey}`;
+    }
+
+    ngOnDestroy(): void {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+        if (this.sub2) {
+            this.sub2.unsubscribe();
+        }
     }
 }

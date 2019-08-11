@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const uuid = require('uuid/v4');
+const fbAdmin = require('firebase-admin');
 
 const {Storage} = require('@google-cloud/storage');
 
@@ -12,11 +13,21 @@ const storage = new Storage({
     projectId: 'ionic-to-do-project'
 });
 
+fbAdmin.initializeApp({credential: fbAdmin.credential.cert('./firebase-admin.json')});
+
 exports.storeImage = functions.https.onRequest((req, res) => {
     return cors(req, res, () => {
         if (req.method !== 'POST') {
             return res.status(500).json({message: 'Not allowed.'});
         }
+
+        if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+            return res.status(401).json({error: 'Unauthorized!'})
+        }
+
+        let idToken;
+        idToken = req.headers.authorization.split('Bearer ')[1];
+
         const busboy = new Busboy({headers: req.headers});
         let uploadData;
         let oldImagePath;
@@ -38,19 +49,21 @@ exports.storeImage = functions.https.onRequest((req, res) => {
                 imagePath = oldImagePath;
             }
 
-            console.log(uploadData.type);
-            return storage
-                .bucket('ionic-to-do-project.appspot.com')
-                .upload(uploadData.filePath, {
-                    uploadType: 'media',
-                    destination: imagePath,
-                    metadata: {
+            return fbAdmin.auth().verifyIdToken(idToken).then(() => {
+                console.log(uploadData.type);
+                return storage
+                    .bucket('ionic-to-do-project.appspot.com')
+                    .upload(uploadData.filePath, {
+                        uploadType: 'media',
+                        destination: imagePath,
                         metadata: {
-                            contentType: uploadData.type,
-                            firebaseStorageDownloadTokens: id
+                            metadata: {
+                                contentType: uploadData.type,
+                                firebaseStorageDownloadTokens: id
+                            }
                         }
-                    }
-                })
+                    })
+            })
 
                 .then(() => {
                     return res.status(201).json({
