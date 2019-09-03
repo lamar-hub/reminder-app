@@ -1,5 +1,5 @@
 <ion-header>
-    <ion-toolbar>
+    <ion-toolbar color="tertiary">
         <ion-buttons slot="start">
             <ion-back-button text="" defaultHref="/auth"></ion-back-button>
         </ion-buttons>
@@ -7,27 +7,69 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content padding>
     <form [formGroup]="form">
         <ion-list>
             <ion-item>
-                <ion-label position="floating">Username</ion-label>
-                <ion-input formControlName="email" type="email"></ion-input>
+                <ion-label position="floating">Email</ion-label>
+                <ion-input debounce="1000" formControlName="email" type="email"></ion-input>
             </ion-item>
+            <div>
+                <ng-container *ngFor="let error of errorMessages.email">
+                    <ion-row
+                            *ngIf="form.get('email').hasError(error.type) && (form.get('email').dirty || form.get('email').touched)"
+                            class="ion-align-items-center">
+                        <ion-col offset="1" size="1">
+                            <ion-icon class="error-icon" name="alert"></ion-icon>
+                        </ion-col>
+                        <ion-col class="error-validation" size="10">
+                            {{error.message}}
+                        </ion-col>
+                    </ion-row>
+                </ng-container>
+            </div>
             <ion-item>
                 <ion-label position="floating">Password</ion-label>
-                <ion-input formControlName="password" type="password"></ion-input>
+                <ion-input debounce="1000" formControlName="password" type="password"></ion-input>
             </ion-item>
+            <div>
+                <ng-container *ngFor="let error of errorMessages.password">
+                    <ion-row
+                            *ngIf="form.get('password').hasError(error.type) && (form.get('password').dirty || form.get('password').touched)"
+                            class="ion-align-items-center">
+                        <ion-col offset="1" size="1">
+                            <ion-icon class="error-icon" name="alert"></ion-icon>
+                        </ion-col>
+                        <ion-col class="error-validation" size="10">
+                            {{error.message}}
+                        </ion-col>
+                    </ion-row>
+                </ng-container>
+            </div>
             <ion-item>
                 <ion-label position="floating">Confirm Password</ion-label>
-                <ion-input formControlName="confirmPassword" type="password"></ion-input>
+                <ion-input debounce="1000" formControlName="confirmPassword" type="password"></ion-input>
             </ion-item>
+            <div>
+                <ng-container *ngFor="let error of errorMessages.confirmPassword">
+                    <ion-row
+                            *ngIf="form.hasError(error.type) && (form.get('confirmPassword').dirty || form.get('confirmPassword').touched)"
+                            class="ion-align-items-center">
+                        <ion-col offset="1" size="1">
+                            <ion-icon class="error-icon" name="alert"></ion-icon>
+                        </ion-col>
+                        <ion-col class="error-validation" size="10">
+                            {{error.message}}
+                        </ion-col>
+                    </ion-row>
+                </ng-container>
+            </div>
         </ion-list>
         <ion-button
                 (click)="onSignUp()"
                 [disabled]="!form.valid"
-                color="primary"
-                expand="full"
+                color="tertiary"
+                expand="block"
         >Sign Up
         </ion-button>
     </form>

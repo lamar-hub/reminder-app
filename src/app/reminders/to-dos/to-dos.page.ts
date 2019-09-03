@@ -51,8 +51,12 @@ export class ToDosPage implements OnInit, OnDestroy {
     }
 
     onDeleteToDo(id: string, slider: IonItemSliding) {
+        slider.close();
         this.actionSheetCtrl.create({
             header: 'To-do',
+            subHeader: 'Do you want to delete this to-do?',
+            cssClass: 'action-sheet-global',
+            mode: 'ios',
             buttons: [
                 {
                     text: 'Delete',
@@ -63,7 +67,7 @@ export class ToDosPage implements OnInit, OnDestroy {
                 },
                 {
                     text: 'Cancel',
-                    role: 'destructive'
+                    role: 'cancel',
                 }
             ]
         }).then(asel => {
@@ -89,7 +93,10 @@ export class ToDosPage implements OnInit, OnDestroy {
 
     onDeleteAllDoneToDos() {
         this.actionSheetCtrl.create({
-            header: 'To-dos',
+            header: 'To-do',
+            subHeader: 'Do you want to delete all done to-dos?',
+            cssClass: 'action-sheet-global',
+            mode: 'ios',
             buttons: [
                 {
                     text: 'Delete ALL',
@@ -100,7 +107,7 @@ export class ToDosPage implements OnInit, OnDestroy {
                 },
                 {
                     text: 'Cancel',
-                    role: 'destructive'
+                    role: 'cancel'
                 }
             ]
         }).then(asel => {

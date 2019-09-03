@@ -1,5 +1,5 @@
 import {Injectable, OnDestroy} from '@angular/core';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject, forkJoin, Subscription} from 'rxjs';
 import {Event} from './event.model';
 import {HttpClient} from '@angular/common/http';
 import {map, switchMap, take, tap} from 'rxjs/operators';
@@ -22,6 +22,7 @@ interface EventData {
 export class EventService implements OnDestroy {
 
     private _eventsSubject = new BehaviorSubject<Event[]>([]);
+    private _coords: { lat: number, lng: number };
     private userId: string;
     private token: string;
     private readonly sub: Subscription;
@@ -38,6 +39,14 @@ export class EventService implements OnDestroy {
 
     get eventsObservable() {
         return this._eventsSubject.asObservable();
+    }
+
+    get coords(): { lat: number; lng: number } {
+        return this._coords;
+    }
+
+    set coords(value: { lat: number; lng: number }) {
+        this._coords = value;
     }
 
     fetchAllEvents() {
@@ -164,5 +173,12 @@ export class EventService implements OnDestroy {
         if (this.sub2) {
             this.sub2.unsubscribe();
         }
+    }
+
+    deleteAllPastEvents(idArray: string[]) {
+        const observables = [];
+        idArray.forEach(id => observables.push(this.deleteEvent(id)));
+
+        return forkJoin(observables);
     }
 }

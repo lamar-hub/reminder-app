@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ModalController, NavController} from '@ionic/angular';
+import {ActionSheetController, ModalController, NavController} from '@ionic/angular';
 import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Event} from '../event.model';
 import {of, Subscription} from 'rxjs';
@@ -19,7 +19,6 @@ export class EventEditPage implements OnInit, OnDestroy {
 
     event: Event;
     form: FormGroup;
-    date = new Date();
     private sub: Subscription;
     private sub2: Subscription;
     selectedLocationImage: string;
@@ -27,7 +26,8 @@ export class EventEditPage implements OnInit, OnDestroy {
     constructor(private navCtrl: NavController,
                 private eventService: EventService,
                 private route: ActivatedRoute,
-                private modalCtrl: ModalController) {
+                private modalCtrl: ModalController,
+                private actionSheetCtrl: ActionSheetController) {
     }
 
     ngOnInit() {
@@ -45,6 +45,7 @@ export class EventEditPage implements OnInit, OnDestroy {
             console.log(paramMap.get('eventId'));
             this.sub = this.eventService.getEvent(paramMap.get('eventId')).subscribe(event => {
                 this.event = event;
+                this.eventService.coords = {lat: event.location.lat, lng: event.location.lng};
                 this.selectedLocationImage = this.event.location.staticMapImageUrl;
                 this.form.setValue({
                     title: this.event.title,
@@ -61,6 +62,8 @@ export class EventEditPage implements OnInit, OnDestroy {
     }
 
     onEditEvent() {
+        this.eventService.coords = null;
+
         this.sub2 = this.eventService.updateEvent(
             this.event.id,
             this.form.get('title').value,
@@ -80,6 +83,31 @@ export class EventEditPage implements OnInit, OnDestroy {
         return null;
     }
 
+    onLocate() {
+        this.actionSheetCtrl.create({
+            header: 'Pick location',
+            subHeader: 'Choose your location mode!',
+            cssClass: 'action-sheet-global',
+            mode: 'ios',
+            buttons: [
+                {
+                    text: 'Custom Location',
+                    handler: () => this.onPickLocation()
+                },
+                {
+                    text: 'Auto Location',
+                    handler: () => this.onAutoLocate()
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel'
+                }
+            ]
+        }).then(el => {
+            el.present();
+        });
+    }
+
     onPickLocation() {
         this.modalCtrl.create({
             component: MapModalComponent
@@ -88,6 +116,7 @@ export class EventEditPage implements OnInit, OnDestroy {
                 if (!modalData.data) {
                     return;
                 }
+                this.eventService.coords = {lat: modalData.data.lat, lng: modalData.data.lng};
                 const pickedLocation: PlaceLocation = {
                     lat: modalData.data.lat,
                     lng: modalData.data.lng,
@@ -115,9 +144,15 @@ export class EventEditPage implements OnInit, OnDestroy {
     }
 
     onAutoLocate() {
+        if (!Plugins.Geolocation) {
+            console.log('false');
+            return;
+        }
+
         Plugins.Geolocation
             .getCurrentPosition()
             .then((position: Position) => {
+                this.eventService.coords = {lat: position.coords.latitude, lng: position.coords.longitude};
                 const pickedLocation: PlaceLocation = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude,
@@ -146,6 +181,10 @@ export class EventEditPage implements OnInit, OnDestroy {
             });
     }
 
+    ionViewWillLeave() {
+        this.eventService.coords = null;
+    }
+
     ngOnDestroy(): void {
         if (this.sub) {
             this.sub.unsubscribe();
@@ -154,4 +193,5 @@ export class EventEditPage implements OnInit, OnDestroy {
             this.sub2.unsubscribe();
         }
     }
+
 }

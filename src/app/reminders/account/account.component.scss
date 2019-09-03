@@ -1,0 +1,12 @@
+.round {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: var(--ion-color-primary) solid 3px;
+  margin: 0.5rem;
+}
+
+.closer {
+  margin-left: -2rem;
+  margin-bottom: -2.5rem;
+}

@@ -1,0 +1,15 @@
+.error-validation {
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+}
+
+.error-icon {
+  color: var(--ion-color-danger);
+  font-size: 1rem;
+}
+
+ion-item {
+  --highlight-color-focused: var(--ion-color-primary);
+  --highlight-color-invalid: var(--ion-color-primary);
+  --highlight-color-valid: var(--ion-color-primary);
+}

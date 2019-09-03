@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ModalController, NavController} from '@ionic/angular';
+import {ActionSheetController, ModalController, NavController} from '@ionic/angular';
 import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
 import {EventService} from '../event.service';
 import {PlaceLocation} from '../location.model';
@@ -7,6 +7,8 @@ import {MapModalComponent} from '../../../shared/map-modal/map-modal.component';
 import {switchMap, tap} from 'rxjs/operators';
 import {of} from 'rxjs';
 import {Plugins} from '@capacitor/core';
+
+const {Geolocation} = Plugins;
 
 @Component({
     selector: 'app-event-new',
@@ -16,10 +18,10 @@ import {Plugins} from '@capacitor/core';
 export class EventNewPage implements OnInit {
 
     form: FormGroup;
-    date = new Date();
     selectedLocationImage: string;
 
-    constructor(private navCtrl: NavController, private eventService: EventService, private modalCtrl: ModalController) {
+    constructor(private navCtrl: NavController, private eventService: EventService, private modalCtrl: ModalController,
+                private actionSheetCtrl: ActionSheetController) {
     }
 
     ngOnInit() {
@@ -37,6 +39,7 @@ export class EventNewPage implements OnInit {
 
     onCreateEvent() {
         this.navCtrl.pop();
+        this.eventService.coords = null;
 
         this.eventService.addEvent(
             this.form.get('title').value,
@@ -54,14 +57,40 @@ export class EventNewPage implements OnInit {
         return null;
     }
 
+    onLocate() {
+        this.actionSheetCtrl.create({
+            header: 'Pick location',
+            subHeader: 'Choose your location mode!',
+            cssClass: 'action-sheet-global',
+            mode: 'ios',
+            buttons: [
+                {
+                    text: 'Custom Location',
+                    handler: () => this.onPickLocation()
+                },
+                {
+                    text: 'Auto Location',
+                    handler: () => this.onAutoLocate()
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel'
+                }
+            ]
+        }).then(el => {
+            el.present();
+        });
+    }
+
     onPickLocation() {
         this.modalCtrl.create({
-            component: MapModalComponent
+            component: MapModalComponent,
         }).then(modalEl => {
             modalEl.onDidDismiss().then(modalData => {
                 if (!modalData.data) {
                     return;
                 }
+                this.eventService.coords = {lat: modalData.data.lat, lng: modalData.data.lng};
                 const pickedLocation: PlaceLocation = {
                     lat: modalData.data.lat,
                     lng: modalData.data.lng,
@@ -90,15 +119,21 @@ export class EventNewPage implements OnInit {
     }
 
     onAutoLocate() {
-        Plugins.Geolocation
+        if (!Geolocation) {
+            return;
+        }
+        Geolocation
             .getCurrentPosition()
             .then((position: Position) => {
+                console.log(position);
+                this.eventService.coords = {lat: position.coords.latitude, lng: position.coords.longitude};
                 const pickedLocation: PlaceLocation = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude,
                     address: null,
                     staticMapImageUrl: null
                 };
+                console.log('Location', pickedLocation);
                 this.eventService
                     .getAddress(position.coords.latitude, position.coords.longitude)
                     .pipe(
@@ -119,5 +154,9 @@ export class EventNewPage implements OnInit {
             .catch(reason => {
                 console.log(reason);
             });
+    }
+
+    ionViewWillLeave() {
+        this.eventService.coords = null;
     }
 }

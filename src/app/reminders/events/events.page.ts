@@ -17,6 +17,8 @@ export class EventsPage implements OnInit, OnDestroy {
 
     loading = true;
     events: Event[] = [];
+    pastEvents: Event[] = [];
+    todayEvents: Event[] = [];
     imageUrl: SafeResourceUrl;
     private sub: Subscription;
     private sub2: Subscription;
@@ -31,7 +33,16 @@ export class EventsPage implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.sub = this.eventService.eventsObservable.subscribe(events => {
-            this.events = events;
+            this.events = events
+                .filter(evt => new Date(evt.date).getTime() - new Date().setHours(0, 0, 0, 0) > 86400000)
+                .sort((evt1, evt2) => new Date(evt1.date).getTime() - new Date(evt2.date).getTime());
+            this.todayEvents = events
+                .filter(evt => {
+                    const number = new Date(evt.date).getTime() - new Date().setHours(0, 0, 0, 0);
+                    return number > 0 && number < 86400000;
+                });
+            this.pastEvents = events
+                .filter(evt => new Date(evt.date).getTime() < new Date().setHours(0, 0, 0, 0));
         });
         this.sub3 = this.imageService.imageUrlObservable.subscribe(url => {
             this.imageUrl = url;
@@ -52,6 +63,8 @@ export class EventsPage implements OnInit, OnDestroy {
     onDeleteEvent(id: string, slider: IonItemSliding) {
         this.actionSheetCtrl.create({
             header: 'Event',
+            subHeader: 'Do you want to delete event?',
+            mode: 'ios',
             buttons: [
                 {
                     text: 'Delete',
@@ -63,7 +76,7 @@ export class EventsPage implements OnInit, OnDestroy {
                 },
                 {
                     text: 'Cancel',
-                    role: 'destructive'
+                    role: 'cancel'
                 }
             ]
         }).then(asel => {
@@ -81,6 +94,30 @@ export class EventsPage implements OnInit, OnDestroy {
             .then(modalEl => {
                 modalEl.present();
             });
+    }
+
+    onDeleteAllPastEvents() {
+        this.actionSheetCtrl.create({
+            header: 'Events',
+            subHeader: 'Do you want to delete all past events?',
+            mode: 'ios',
+            buttons: [
+                {
+                    text: 'Delete ALL',
+                    handler: () => {
+                        this.loading = true;
+                        this.eventService.deleteAllPastEvents(this.pastEvents.map(evt => evt.id)).subscribe(() => this.loading = false);
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    role: 'cancel'
+                }
+            ]
+        }).then(asel => {
+            asel.present();
+        });
+
     }
 
     ngOnDestroy(): void {

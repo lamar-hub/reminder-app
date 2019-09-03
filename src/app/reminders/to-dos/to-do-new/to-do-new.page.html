@@ -1,7 +1,7 @@
 <ion-header>
-    <ion-toolbar>
+    <ion-toolbar color="primary">
         <ion-buttons slot="start">
-            <ion-back-button defaultHref="/reminders" text=""></ion-back-button>
+            <ion-back-button defaultHref="/reminders/tabs/to-dos" text=""></ion-back-button>
         </ion-buttons>
         <ion-title>Add To-do</ion-title>
         <ion-buttons slot="primary">
@@ -12,7 +12,7 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content padding>
     <form [formGroup]="form">
         <ion-list>
             <ion-item>

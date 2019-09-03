@@ -3,10 +3,12 @@ import {AuthService} from '../../auth/auth.service';
 import {User} from '../../auth/user.model';
 import {AlertController, ModalController} from '@ionic/angular';
 import {tap} from 'rxjs/operators';
-import {CameraPhoto, CameraResultType, CameraSource, Capacitor, Plugins} from '@capacitor/core';
+import {CameraPhoto, CameraResultType, CameraSource, Plugins} from '@capacitor/core';
 import {SafeResourceUrl} from '@angular/platform-browser';
 import {ImageService} from './image.service';
 import {Subscription} from 'rxjs';
+
+const {Camera} = Plugins;
 
 function base64toBlob(base64Data, contentType) {
     contentType = contentType || '';
@@ -64,7 +66,9 @@ export class AccountComponent implements OnInit, OnDestroy {
 
     onLogout() {
         this.alertCtrl.create({
-            header: 'Logout',
+            header: 'LOGOUT',
+            subHeader: 'Do you want to logout?',
+            mode: 'ios',
             buttons: [
                 {
                     text: 'Yes',
@@ -76,7 +80,7 @@ export class AccountComponent implements OnInit, OnDestroy {
                 },
                 {
                     text: 'No',
-                    role: 'destructive'
+                    role: 'cancel'
                 }
             ]
         }).then(asel => {
@@ -85,18 +89,15 @@ export class AccountComponent implements OnInit, OnDestroy {
     }
 
     onPickPicture() {
-        if (!Capacitor.isPluginAvailable('Camera')) {
+        if (!Camera) {
             return;
         }
-        Plugins.Camera
+        Camera
             .getPhoto({
                 quality: 100,
                 allowEditing: false,
                 resultType: CameraResultType.Base64,
-                source: CameraSource.Camera
-            })
-            .catch(reason => {
-                console.log(reason);
+                source: CameraSource.Prompt
             })
             .then((image: CameraPhoto) => {
                 let imageFile;
@@ -106,6 +107,9 @@ export class AccountComponent implements OnInit, OnDestroy {
                     console.log(error);
                 }
                 this.imageService.uploadImage(imageFile).subscribe();
+            })
+            .catch(error => {
+                console.log(error);
             });
     }
 

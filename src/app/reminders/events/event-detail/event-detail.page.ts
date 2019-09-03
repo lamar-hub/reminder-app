@@ -13,14 +13,17 @@ export class EventDetailPage implements OnInit, OnDestroy {
 
     event: Event;
     private sub: Subscription;
+    loaded = false;
 
     constructor(private eventService: EventService, private route: ActivatedRoute) {
     }
 
     ngOnInit() {
+        this.loaded = false;
         this.route.paramMap.subscribe(paramMap => {
             this.sub = this.eventService.getEvent(paramMap.get('eventId')).subscribe(event => {
                 this.event = event;
+                this.loaded = true;
             });
         });
     }

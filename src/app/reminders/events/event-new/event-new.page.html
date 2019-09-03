@@ -1,5 +1,5 @@
 <ion-header>
-    <ion-toolbar>
+    <ion-toolbar color="primary">
         <ion-buttons slot="start">
             <ion-back-button defaultHref="/reminders" text=""></ion-back-button>
         </ion-buttons>
@@ -12,7 +12,7 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content padding>
     <form [formGroup]="form">
         <ion-list>
             <ion-item>
@@ -24,48 +24,44 @@
             <ion-item>
                 <ion-label position="floating">Date</ion-label>
                 <ion-datetime
-                        [min]="date.toISOString()"
                         formControlName="date"
-                        max="2028-12-31"
                 ></ion-datetime>
             </ion-item>
-            <div formGroupName="time">
-                <ion-item>
-                    <ion-label position="floating">Begin</ion-label>
-                    <ion-datetime
-                            displayFormat="HH:mm"
-                            formControlName="beginTime"
-                    ></ion-datetime>
-                </ion-item>
-                <ion-item>
-                    <ion-label position="floating">Finish</ion-label>
-                    <ion-datetime
-                            displayFormat="HH:mm"
-                            formControlName="endTime"
-                    ></ion-datetime>
-                </ion-item>
-            </div>
+            <ion-row formGroupName="time">
+                <ion-col size="6">
+                    <ion-item>
+                        <ion-label position="floating">From</ion-label>
+                        <ion-datetime
+                                displayFormat="HH:mm"
+                                formControlName="beginTime"
+                        ></ion-datetime>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="6">
+                    <ion-item>
+                        <ion-label position="floating">To</ion-label>
+                        <ion-datetime
+                                displayFormat="HH:mm"
+                                formControlName="endTime"
+                        ></ion-datetime>
+                    </ion-item>
+                </ion-col>
+            </ion-row>
             <ion-item>
                 <ion-label position="floating">Notes</ion-label>
                 <ion-textarea
                         formControlName="notes"
                 ></ion-textarea>
             </ion-item>
-            <ion-item lines="none">
-                <ion-button (click)="onPickLocation()" expand="full">
-                    Pick Location
-                    <ion-icon name="pin" slot="start"></ion-icon>
-                </ion-button>
-                <ion-button (click)="onAutoLocate()" expand="full">
-                    Auto Locate
-                    <ion-icon name="locate" slot="end"></ion-icon>
-                </ion-button>
-            </ion-item>
+            <ion-button (click)="onLocate()" color="tertiary" expand="block" margin-horizontal size="default">
+                Pick Location
+                <ion-icon name="locate" slot="end"></ion-icon>
+            </ion-button>
             <ion-item *ngIf="selectedLocationImage" lines="none" text-center>
-                <ion-label text-center>{{form.get('location').value.address}}</ion-label>
+                <ion-label class="text" text-center>{{form.get('location').value.address}}</ion-label>
             </ion-item>
-            <ion-item *ngIf="selectedLocationImage" lines="none">
-                <ion-img (click)="onPickLocation()" [src]="selectedLocationImage"></ion-img>
+            <ion-item (click)="onPickLocation()" *ngIf="selectedLocationImage" lines="none">
+                <ion-img [src]="selectedLocationImage" class="border" no-padding></ion-img>
             </ion-item>
         </ion-list>
     </form>

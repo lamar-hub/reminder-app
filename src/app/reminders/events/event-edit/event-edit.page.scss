@@ -1,0 +1,25 @@
+.error-validation {
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+}
+
+.error-icon {
+  color: var(--ion-color-danger);
+  font-size: 1rem;
+}
+
+ion-item {
+  --highlight-color-focused: var(--ion-color-primary);
+  --highlight-color-invalid: var(--ion-color-primary);
+  --highlight-color-valid: var(--ion-color-primary);
+}
+
+.border {
+  border: .15rem var(--ion-color-tertiary) solid;
+  width: 100%;
+}
+
+.text {
+  font-style: italic;
+  color: var(--ion-color-medium-shade);
+}

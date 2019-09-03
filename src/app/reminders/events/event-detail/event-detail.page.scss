@@ -1,0 +1,24 @@
+//ion-col {
+//  border: 1px solid red;
+//}
+
+.top-border {
+  border-top: 1px var(--ion-color-medium) solid;
+}
+
+.bottom-border {
+  border-bottom: 1px var(--ion-color-medium) solid;
+}
+
+.bottom-padding {
+  padding-bottom: 0;
+}
+
+.padding {
+  padding: 0.5rem;
+}
+
+.color {
+  --background: var(--ion-color-primary-contrast);
+  --color: var(--ion-color-primary-contrast);
+}

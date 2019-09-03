@@ -26,7 +26,6 @@ export class ImageService implements OnDestroy {
                 })
             )
             .subscribe(id => {
-                console.log(id);
                 this.userId = id;
             });
 
@@ -46,18 +45,13 @@ export class ImageService implements OnDestroy {
             )
             .pipe(
                 tap((responseData: any) => {
-                    for (const key in responseData) {
-                        if (responseData.hasOwnProperty(key)) {
-                            this._imageUrlSubject.next(responseData[key].imageUrl);
-                        }
-                    }
+                    this._imageUrlSubject.next(responseData ? responseData.url : null);
                 })
             );
     }
 
     uploadImage(image: File) {
         const uploadData = new FormData();
-        let url: string;
 
         uploadData.append('image', image);
 
@@ -73,24 +67,11 @@ export class ImageService implements OnDestroy {
             )
             .pipe(
                 switchMap(response => {
-                    url = response.imageUrl;
                     return this.httpClient
-                        .delete(`https://ionic-to-do-project.firebaseio.com/${this.userId}/image.json?auth=${this.token}`);
-                }),
-                switchMap(() => {
-                    return this.httpClient
-                        .post(
-                            `https://ionic-to-do-project.firebaseio.com/${this.userId}/image.json?auth=${this.token}`,
-                            {imageUrl: url}
-                        );
-                }),
-                switchMap((object: any) => {
-                    return this.httpClient
-                        .get(
-                            `https://ionic-to-do-project.firebaseio.com/${this.userId}/image/${object.name}.json?auth=${this.token}`
-                        ).pipe(
-                            tap((data: any) => {
-                                this._imageUrlSubject.next(data.imageUrl);
+                        .put(`https://ionic-to-do-project.firebaseio.com/${this.userId}/image.json?auth=${this.token}`, {url: response.imageUrl})
+                        .pipe(
+                            tap(() => {
+                                this._imageUrlSubject.next(response.imageUrl);
                             })
                         );
                 })

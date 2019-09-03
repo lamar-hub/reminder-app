@@ -9,3 +9,19 @@
 @import '~@ionic/angular/css/text-alignment.css';
 @import '~@ionic/angular/css/text-transformation.css';
 @import '~@ionic/angular/css/flex-utils.css';
+
+.action-sheet-global {
+  --background: var(--ion-color-light);
+  --background-selected: var(--ion-color-light);
+  --background-activated: var(--ion-color-secondary-tint);
+}
+
+.action-sheet-title.sc-ion-action-sheet-ios {
+  height: 70px;
+  font-size: 16px;
+  font-weight: bolder;
+}
+
+.alert-global {
+  --background: var(--ion-color-light);
+}
